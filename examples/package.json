@@ -1,0 +1,32 @@
+{
+  "name": "react-pdf-viewer-examples",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Example applications for @haikal/react-pdf-viewer",
+  "scripts": {
+    "postinstall": "node scripts/copy-pdf-worker.js",
+    "predev": "node scripts/sync-css.js",
+    "dev": "next dev",
+    "build": "npm run copy-worker && npm run sync-css && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "copy-worker": "node scripts/copy-pdf-worker.js",
+    "sync-css": "node scripts/sync-css.js"
+  },
+  "dependencies": {
+    "next": "^14.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "autoprefixer": "^10.4.16",
+    "esbuild": "^0.25.11",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.3.3"
+  }
+}

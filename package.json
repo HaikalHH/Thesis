@@ -1,0 +1,58 @@
+{
+  "name": "@haikal/react-pdf-viewer",
+  "version": "1.0.0",
+  "description": "React TypeScript library untuk preview PDF di Next.js menggunakan PDF.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "build:tsc": "tsc --project tsconfig.lib.json",
+    "dev": "cd examples && npm run dev",
+    "dev:examples": "cd examples && npm run dev",
+    "build:examples": "cd examples && npm run build",
+    "link:examples": "npm link && cd examples && npm link @haikal/react-pdf-viewer",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "react",
+    "nextjs",
+    "pdf",
+    "viewer",
+    "preview",
+    "typescript",
+    "pdfjs"
+  ],
+  "author": "Haikal",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/haikal/react-pdf-viewer.git"
+  },
+  "peerDependencies": {
+    "next": "^14.0.0 || ^15.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "dependencies": {
+    "docx-preview": "^0.3.7",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
+    "jszip": "^3.10.1",
+    "pdfjs-dist": "^4.0.379"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "esbuild": "^0.19.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist",
+    "lib",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ]
+}

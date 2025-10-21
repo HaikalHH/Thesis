@@ -1,0 +1,13 @@
+src/app
+src/components/examples
+public
+.next
+node_modules
+*.log
+.env*
+tsconfig.json
+next.config.js
+tailwind.config.ts
+postcss.config.js
+.gitignore
+

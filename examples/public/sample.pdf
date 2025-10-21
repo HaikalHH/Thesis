@@ -1,0 +1,284 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R 4 0 R 5 0 R 6 0 R 7 0 R]
+/Count 5
+>>
+endobj
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 595 842]
+/Contents 8 0 R
+/Resources <<
+/Font <<
+/F1 9 0 R
+/F2 10 0 R
+>>
+>>
+>>
+endobj
+4 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 595 842]
+/Contents 11 0 R
+/Resources <<
+/Font <<
+/F1 9 0 R
+>>
+>>
+>>
+endobj
+5 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 595 842]
+/Contents 12 0 R
+/Resources <<
+/Font <<
+/F1 9 0 R
+>>
+>>
+>>
+endobj
+6 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 595 842]
+/Contents 13 0 R
+/Resources <<
+/Font <<
+/F1 9 0 R
+>>
+>>
+>>
+endobj
+7 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 595 842]
+/Contents 14 0 R
+/Resources <<
+/Font <<
+/F1 9 0 R
+>>
+>>
+>>
+endobj
+8 0 obj
+<<
+/Length 800
+>>
+stream
+BT
+/F2 24 Tf
+50 800 Td
+(Laporan Proyek Pengembangan Aplikasi 2024) Tj
+ET
+BT
+/F2 16 Tf
+50 760 Td
+(Halaman 1 dari 5) Tj
+ET
+BT
+/F2 18 Tf
+50 720 Td
+(Executive Summary) Tj
+ET
+BT
+/F1 12 Tf
+50 690 Td
+(Proyek pengembangan Document Preview Library telah berhasil) Tj
+0 -20 Td
+(mencapai milestone utama pada Q1 2024. Library ini menyediakan) Tj
+0 -20 Td
+(solusi komprehensif untuk preview multi-format dokumen dalam) Tj
+0 -20 Td
+(aplikasi React dan NextJs.) Tj
+ET
+BT
+/F2 14 Tf
+50 600 Td
+(Pencapaian Utama:) Tj
+ET
+BT
+/F1 12 Tf
+70 570 Td
+(• Implementasi preview untuk 6+ format dokumen) Tj
+0 -20 Td
+(• Antarmuka pengguna yang responsif dan intuitif) Tj
+0 -20 Td
+(• Sistem upload dengan drag & drop functionality) Tj
+0 -20 Td
+(• Validasi file dan error handling yang robust) Tj
+ET
+endstream
+endobj
+9 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica-Bold
+>>
+endobj
+11 0 obj
+<<
+/Length 400
+>>
+stream
+BT
+/F1 12 Tf
+50 800 Td
+(Halaman 2 dari 5) Tj
+ET
+BT
+/F1 12 Tf
+50 760 Td
+(Teknologi yang Digunakan:) Tj
+0 -30 Td
+(- React 18) Tj
+0 -20 Td
+(- Next.js 14/15) Tj
+0 -20 Td
+(- TypeScript) Tj
+0 -20 Td
+(- PDF.js untuk rendering PDF) Tj
+0 -20 Td
+(- Tailwind CSS untuk styling) Tj
+0 -30 Td
+(Library ini telah dioptimasi untuk performa tinggi) Tj
+0 -20 Td
+(dan kompatibilitas dengan berbagai browser modern.) Tj
+ET
+endstream
+endobj
+12 0 obj
+<<
+/Length 300
+>>
+stream
+BT
+/F1 12 Tf
+50 800 Td
+(Halaman 3 dari 5) Tj
+ET
+BT
+/F1 12 Tf
+50 760 Td
+(Fitur-fitur Utama:) Tj
+0 -30 Td
+(1. Preview PDF dengan zoom controls) Tj
+0 -20 Td
+(2. Navigasi halaman yang smooth) Tj
+0 -20 Td
+(3. Support untuk berbagai sumber file) Tj
+0 -20 Td
+(4. Fullscreen mode) Tj
+0 -20 Td
+(5. Download functionality) Tj
+ET
+endstream
+endobj
+13 0 obj
+<<
+/Length 350
+>>
+stream
+BT
+/F1 12 Tf
+50 800 Td
+(Halaman 4 dari 5) Tj
+ET
+BT
+/F1 12 Tf
+50 760 Td
+(Integrasi dengan Next.js:) Tj
+0 -30 Td
+(Library ini dirancang khusus untuk framework Next.js) Tj
+0 -20 Td
+(dengan support untuk App Router dan Server Components.) Tj
+0 -30 Td
+(Mudah diintegrasikan dengan dynamic import untuk) Tj
+0 -20 Td
+(menghindari SSR issues pada client-only components.) Tj
+ET
+endstream
+endobj
+14 0 obj
+<<
+/Length 400
+>>
+stream
+BT
+/F1 12 Tf
+50 800 Td
+(Halaman 5 dari 5) Tj
+ET
+BT
+/F1 12 Tf
+50 760 Td
+(Kesimpulan:) Tj
+0 -30 Td
+(Document Preview Library telah mencapai tahap MVP) Tj
+0 -20 Td
+(dan siap untuk testing lebih lanjut. Pengembangan) Tj
+0 -20 Td
+(selanjutnya akan fokus pada:) Tj
+0 -30 Td
+(- Support format dokumen tambahan) Tj
+0 -20 Td
+(- Optimasi performa) Tj
+0 -20 Td
+(- Penambahan fitur annotasi) Tj
+0 -20 Td
+(- Testing dan dokumentasi lengkap) Tj
+ET
+endstream
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000015 00000 n 
+0000000068 00000 n 
+0000000145 00000 n 
+0000000312 00000 n 
+0000000441 00000 n 
+0000000570 00000 n 
+0000000699 00000 n 
+0000000828 00000 n 
+0000001680 00000 n 
+0000001758 00000 n 
+0000001841 00000 n 
+0000002291 00000 n 
+0000002641 00000 n 
+0000003041 00000 n 
+trailer
+<<
+/Size 15
+/Root 1 0 R
+>>
+startxref
+3491
+%%EOF
+
