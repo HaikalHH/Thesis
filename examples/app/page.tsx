@@ -11,10 +11,10 @@ export default function Home() {
             React Document Viewer
           </h1>
           <p className="text-xl text-gray-600 mb-2">
-            Library React TypeScript untuk Preview PDF & DOCX di Next.js
+            Library React TypeScript untuk Preview PDF di Next.js (DOCX via converter-service)
           </p>
           <p className="text-sm text-gray-500">
-            Powered by PDF.js & docx-preview | Compatible with Next.js 14/15 App Router
+            Powered by PDF.js • Compatible dengan Next.js 14/15 App Router • Full TypeScript
           </p>
         </div>
 
@@ -32,14 +32,14 @@ export default function Home() {
                 Preview Mode
               </h2>
               <p className="text-gray-600 mb-4">
-                Preview PDF & DOCX tanpa UI upload. Switch antara format dengan selector. Cocok untuk menampilkan dokumen dari URL.
+                Preview PDF dari URL atau otomatis konversi DOCX → PDF sebelum ditampilkan. Cocok untuk integrasi cepat.
               </p>
               <div className="bg-gray-900 text-gray-100 p-3 rounded-lg text-xs font-mono">
-                {'<PDFPreview /> | <DocxPreview />'}
+                {'<PDFPreview file={source} />'}
               </div>
               <div className="mt-3 flex gap-2">
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">📄 PDF</span>
-                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">📝 DOCX</span>
+                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">📝 DOCX → PDF</span>
               </div>
             </div>
           </Link>
@@ -56,14 +56,14 @@ export default function Home() {
                 Upload Mode
               </h2>
               <p className="text-gray-600 mb-4">
-                UI lengkap dengan drag & drop upload, file list, dan auto-preview. Support PDF & DOCX dengan auto-detect file type.
+                UI lengkap dengan drag & drop upload, file list, dan auto-preview. DOCX otomatis dikonversi ke PDF oleh converter-service.
               </p>
               <div className="bg-gray-900 text-gray-100 p-3 rounded-lg text-xs font-mono">
                 {'<FileUpload /> + <AutoPreview />'}
               </div>
               <div className="mt-3 flex gap-2">
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">📄 PDF</span>
-                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">📝 DOCX</span>
+                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">📝 DOCX → PDF</span>
                 <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">✨ Auto</span>
               </div>
             </div>
@@ -108,9 +108,9 @@ export default function Home() {
 
         <div className="mt-8 text-center text-gray-500 text-sm">
           <p>Proyek Skripsi: Pengembangan Library Berbasis React untuk Preview Multi-Format Dokumen</p>
-          <p className="mt-2">Next.js 14/15 • React 18 • TypeScript • PDF.js • docx-preview • Tailwind CSS</p>
+          <p className="mt-2">Next.js 14/15 • React 18 • TypeScript • PDF.js • LibreOffice • Tailwind CSS</p>
           <p className="mt-3 text-xs">
-            Support: <span className="font-semibold">PDF</span> & <span className="font-semibold">DOCX</span> • 
+            Support: <span className="font-semibold">PDF</span> & <span className="font-semibold">DOCX (via converter)</span> •
             More formats coming soon!
           </p>
         </div>
@@ -118,4 +118,3 @@ export default function Home() {
     </div>
   );
 }
-

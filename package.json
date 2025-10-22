@@ -7,11 +7,11 @@
   "scripts": {
     "build": "tsup",
     "build:tsc": "tsc --project tsconfig.lib.json",
-    "dev": "cd examples && npm run dev",
-    "dev:examples": "cd examples && npm run dev",
-    "build:examples": "cd examples && npm run build",
-    "link:examples": "npm link && cd examples && npm link @haikal/react-pdf-viewer",
-    "prepublishOnly": "npm run build"
+    "dev": "pnpm --dir examples dev",
+    "dev:examples": "pnpm --dir examples dev",
+    "build:examples": "pnpm --dir examples build",
+    "link:examples": "pnpm link --global && pnpm --dir examples link @haikal/react-pdf-viewer",
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "react",
@@ -34,10 +34,6 @@
     "react-dom": "^18.0.0"
   },
   "dependencies": {
-    "docx-preview": "^0.3.7",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^3.0.3",
-    "jszip": "^3.10.1",
     "pdfjs-dist": "^4.0.379"
   },
   "devDependencies": {
@@ -54,5 +50,6 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
-  ]
+  ],
+  "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b"
 }

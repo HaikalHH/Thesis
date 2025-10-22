@@ -1,43 +1,144 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { FileUpload, PDFPreview, DocxPreview } from '../../../dist/index.mjs';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { FileUpload, PDFPreview } from "../../../dist/index.mjs";
+import {
+  converterEndpoint,
+  convertDocxFileToPdf,
+} from "../../lib/convertDocxToPdf";
 
-/**
- * Example Page - With Upload UI (Composition Pattern)
- * Contoh penggunaan FileUpload + PDFPreview/DocxPreview dengan composition
- * Auto-detect file type (PDF atau DOCX) dan render component yang sesuai
- */
+type FileType = "pdf" | "docx" | null;
+
 export default function ExampleUploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  
-  // Auto-detect file type
-  const getFileType = (file: File | null): 'pdf' | 'docx' | null => {
-    if (!file) return null;
-    if (file.type === 'application/pdf') return 'pdf';
-    if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'docx';
-    // Fallback: check extension
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    if (ext === 'pdf') return 'pdf';
-    if (ext === 'docx') return 'docx';
+  const [previewSource, setPreviewSource] = useState<File | string | null>(null);
+  const [status, setStatus] = useState<"idle" | "converting">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const convertedUrlRef = useRef<string | null>(null);
+
+  const cleanupConvertedUrl = useCallback(() => {
+    if (convertedUrlRef.current) {
+      URL.revokeObjectURL(convertedUrlRef.current);
+      convertedUrlRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      cleanupConvertedUrl();
+    };
+  }, [cleanupConvertedUrl]);
+
+  const fileType: FileType = useMemo(() => {
+    if (!selectedFile) {
+      return null;
+    }
+
+    if (selectedFile.type === "application/pdf") {
+      return "pdf";
+    }
+
+    if (
+      selectedFile.type ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      return "docx";
+    }
+
+    const ext = selectedFile.name.split(".").pop()?.toLowerCase();
+    if (ext === "pdf") {
+      return "pdf";
+    }
+    if (ext === "docx") {
+      return "docx";
+    }
+
     return null;
-  };
-  
-  const fileType = getFileType(selectedFile);
+  }, [selectedFile]);
+
+  useEffect(() => {
+    if (!selectedFile) {
+      cleanupConvertedUrl();
+      setPreviewSource(null);
+      setStatus("idle");
+      setError(null);
+      return;
+    }
+
+    setError(null);
+
+    if (fileType === "pdf") {
+      cleanupConvertedUrl();
+      setPreviewSource(selectedFile);
+      setStatus("idle");
+      return;
+    }
+
+    if (fileType !== "docx") {
+      cleanupConvertedUrl();
+      setPreviewSource(null);
+      setStatus("idle");
+      setError("Format tidak didukung. Gunakan PDF atau DOCX.");
+      return;
+    }
+
+    const controller = new AbortController();
+    let cancelled = false;
+
+    cleanupConvertedUrl();
+    setStatus("converting");
+    setPreviewSource(null);
+
+    convertDocxFileToPdf(selectedFile, controller.signal)
+      .then((url) => {
+        if (cancelled) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+        convertedUrlRef.current = url;
+        setPreviewSource(url);
+        setStatus("idle");
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        cleanupConvertedUrl();
+        setStatus("idle");
+        setError(
+          err instanceof Error ? err.message : "Gagal mengonversi file DOCX."
+        );
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [cleanupConvertedUrl, fileType, selectedFile]);
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link 
+            <Link
               href="/"
               className="text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
               </svg>
               Kembali
             </Link>
@@ -46,81 +147,86 @@ export default function ExampleUploadPage() {
                 Document Upload & Preview
               </h1>
               <p className="text-xs text-gray-600">
-                Upload PDF/DOCX + Auto Preview (Composition Pattern)
+                Upload PDF atau DOCX, konversi otomatis ke PDF dan tampilkan di
+                viewer
               </p>
             </div>
           </div>
-          
+
           <div className="bg-gray-900 text-gray-100 px-3 py-1.5 rounded text-xs font-mono">
-            {'<FileUpload /> + <Preview />'}
+            {"<FileUpload /> + <PDFPreview />"}
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-hidden flex">
-        {/* Upload Section */}
         <div className="w-96 border-r border-gray-200 bg-white flex flex-col">
           <FileUpload
             onFileSelect={setSelectedFile}
             accept=".pdf,.docx"
-            maxSizeMB={10}
+            maxSizeMB={25}
             showFileList={true}
           />
+          <div className="px-4 py-3 border-t border-gray-200 text-xs text-gray-500">
+            <p>{`Service converter: ${converterEndpoint}`}</p>
+            <p className="mt-1">
+              Pastikan service berjalan (`pnpm dev` di converter-service atau
+              Docker container).
+            </p>
+          </div>
         </div>
 
-        {/* Preview Section */}
         <div className="flex-1 overflow-hidden">
-          {selectedFile ? (
-            <>
-              {fileType === 'pdf' && (
-                <PDFPreview 
-                  file={selectedFile}
-                  onPageChange={(page: number, total: number) => {
-                    console.log(`Page ${page}/${total}`);
-                  }}
-                  onError={(error: Error) => {
-                    console.error('PDF Error:', error);
-                  }}
-                />
-              )}
-              {fileType === 'docx' && (
-                <DocxPreview 
-                  file={selectedFile}
-                  onRenderComplete={() => {
-                    console.log('DOCX rendered successfully!');
-                  }}
-                  onError={(error: Error) => {
-                    console.error('DOCX Error:', error);
-                  }}
-                />
-              )}
-              {!fileType && (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center text-red-600">
-                    <svg className="w-16 h-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="font-semibold">Format tidak didukung</p>
-                    <p className="text-sm mt-2">Hanya support PDF dan DOCX</p>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
+          {status === "converting" && (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
-                <svg 
-                  className="w-24 h-24 text-gray-300 mx-auto mb-4" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4" />
+                <p className="text-gray-600 font-medium">
+                  Mengonversi DOCX ke PDF...
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Proses ini dapat memakan waktu hingga 1 menit untuk file besar.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center text-red-600 max-w-md">
+                <svg
+                  className="w-16 h-16 mx-auto mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="font-semibold">Gagal memuat dokumen</p>
+                <p className="text-sm mt-2">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {!selectedFile && status === "idle" && !error && (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center">
+                <svg
+                  className="w-24 h-24 text-gray-300 mx-auto mb-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
                 <p className="text-gray-500 text-lg font-medium mb-2">
@@ -132,61 +238,58 @@ export default function ExampleUploadPage() {
               </div>
             </div>
           )}
+
+          {previewSource && !error && status === "idle" && (
+            <PDFPreview
+              file={previewSource}
+              onPageChange={(page: number, total: number) => {
+                console.log(`Page ${page}/${total}`);
+              }}
+              onError={(previewError: Error) => {
+                console.error("PDF Error:", previewError);
+                setError(previewError.message);
+              }}
+            />
+          )}
         </div>
       </div>
 
-      {/* Footer with Code Example */}
       <div className="bg-white border-t border-gray-200 px-6 py-3">
         <details className="cursor-pointer">
           <summary className="font-semibold text-sm text-gray-700 hover:text-gray-900">
-            💻 Lihat Kode Implementasi (Auto-Detect Pattern)
+            💻 Lihat Kode Implementasi (Convert DOCX → PDF)
           </summary>
           <div className="mt-3 bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-            <pre className="text-xs font-mono">{`import { FileUpload, PDFPreview, DocxPreview } from '@haikal/react-pdf-viewer';
-import { useState } from 'react';
-
-export default function Page() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // Auto-detect file type
-  const getFileType = (file: File | null) => {
-    if (!file) return null;
-    if (file.type === 'application/pdf') return 'pdf';
-    if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      return 'docx';
-    }
-    return null;
-  };
-  
-  const fileType = getFileType(selectedFile);
-
-  return (
-    <div className="flex">
-      {/* Upload Section - Support both PDF & DOCX */}
-      <FileUpload
-        onFileSelect={setSelectedFile}
-        accept=".pdf,.docx"
-        maxSizeMB={10}
-      />
-
-      {/* Preview Section - Auto switch based on file type */}
-      {fileType === 'pdf' && <PDFPreview file={selectedFile} />}
-      {fileType === 'docx' && <DocxPreview file={selectedFile} />}
-    </div>
-  );
+            <pre className="text-xs font-mono">
+{`async function convertDocxToPdf(file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const resp = await fetch(process.env.NEXT_PUBLIC_CONVERTER_URL + "/convert", {
+    method: "POST",
+    body: form,
+  });
+  if (!resp.ok) throw new Error("Convert failed");
+  const blob = await resp.blob();
+  return URL.createObjectURL(blob);
 }
 
-// ✨ Keuntungan Auto-Detect Pattern:
-// 1. Satu FileUpload untuk multiple formats
-// 2. Auto render component yang sesuai
-// 3. Flexible & extensible
-// 4. User experience yang smooth`}</pre>
+// Di komponen:
+const fileType = getFileType(file);
+if (fileType === "pdf") {
+  setPreviewSource(file);
+} else if (fileType === "docx") {
+  setStatus("converting");
+  const url = await convertDocxToPdf(file);
+  setPreviewSource(url); // kirim ke <PDFPreview file={url} />
+}`}
+            </pre>
           </div>
-          
+
           <div className="mt-3 bg-green-50 border border-green-200 p-3 rounded-lg">
             <p className="text-sm text-green-900">
-              <strong>💡 Smart Pattern:</strong> FileUpload support multiple formats, lalu auto-detect 
-              file type dan render component yang sesuai (PDFPreview atau DocxPreview)!
+              <strong>💡 Flow baru:</strong> Semua DOCX dikonversi ke PDF
+              server-side melalui converter-service sebelum dipreview. Viewer di
+              frontend sekarang cukup menggunakan komponen PDFPreview.
             </p>
           </div>
         </details>

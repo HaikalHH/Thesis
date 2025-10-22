@@ -1,0 +1,6 @@
+packages:
+  - "."
+  - "converter-service"
+  - "examples"
+  - "packages/*"
+  - "apps/*"

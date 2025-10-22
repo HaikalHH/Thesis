@@ -16,6 +16,7 @@ Library React TypeScript untuk preview file PDF di framework Next.js menggunakan
 - ✅ **Full Features** - Zoom, navigation, fullscreen, download
 - ✅ **TypeScript** - Full type definitions
 - ✅ **Beautiful UI** - Modern & responsive design
+- ✅ **DOCX Support** - Konversi DOCX → PDF via converter-service berbasis LibreOffice
 
 ## 📦 Instalasi
 
@@ -59,6 +60,54 @@ export default function Page() {
   );
 }
 ```
+
+## 📝 DOCX Conversion Flow
+
+Docx tidak lagi dirender langsung di browser. Gunakan service `converter-service` (Express + LibreOffice headless) untuk mengonversi file DOCX menjadi PDF, lalu tampilkan dengan `PDFPreview`.
+
+### Menjalankan converter-service (lokal)
+
+```bash
+pnpm install
+pnpm --filter converter-service dev
+# POST http://localhost:3001/convert
+```
+
+Docker:
+
+```bash
+docker build -t converter-service ./converter-service
+docker run -p 3001:3001 converter-service
+```
+
+Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+### Contoh upload di frontend (Next.js)
+
+```ts
+async function convertDocxToPdf(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_CONVERTER_URL}/convert`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Convert failed");
+  }
+
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
+}
+```
+
+Gunakan URL blob hasil konversi tersebut pada komponen `PDFPreview`.
 
 **That's ALL!** 🎉
 

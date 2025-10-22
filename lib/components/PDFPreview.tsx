@@ -156,13 +156,20 @@ export const PDFPreview: React.FC<PDFPreviewProps> = ({
 
       if (!context) return;
 
-      const viewport = page.getViewport({ scale: zoom });
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+      const deviceScale =
+        (typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1) * 1.5;
+
+      const displayViewport = page.getViewport({ scale: zoom });
+      const renderViewport = page.getViewport({ scale: zoom * deviceScale });
+
+      canvas.width = renderViewport.width;
+      canvas.height = renderViewport.height;
+      canvas.style.width = `${displayViewport.width}px`;
+      canvas.style.height = `${displayViewport.height}px`;
 
       const renderContext = {
         canvasContext: context,
-        viewport: viewport,
+        viewport: renderViewport,
       };
 
       await page.render(renderContext).promise;
@@ -380,4 +387,3 @@ export const PDFPreview: React.FC<PDFPreviewProps> = ({
     </div>
   );
 };
-

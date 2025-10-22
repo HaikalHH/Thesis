@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['lib/index.ts', 'lib/styles/docx-preview.css'],
+  entry: ['lib/index.ts'],
   format: ['esm', 'cjs'],
   dts: false, // Skip type definitions for now - tsup has issues with JSX
   splitting: false,
@@ -16,18 +16,10 @@ export default defineConfig({
     'next',
   ],
   // Bundle all document processing libraries into the library
-  noExternal: [
-    'pdfjs-dist',
-    'docx-preview',
-    'html2canvas',
-    'jspdf',
-    'jszip',
-    'xml2js',
-  ],
+  noExternal: ['pdfjs-dist'],
   esbuildOptions(options) {
     options.banner = {
       js: '"use client";',
     };
   },
 });
-

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./docx-preview.css";
 
 export const metadata: Metadata = {
   title: "React PDF Viewer - Next.js Library",
@@ -18,4 +17,3 @@ export default function RootLayout({
     </html>
   );
 }
-

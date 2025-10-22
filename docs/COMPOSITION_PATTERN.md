@@ -111,16 +111,60 @@ export default function PDFViewerPage() {
 
 ```tsx
 import { FileUpload, PDFPreview } from '@haikal/react-pdf-viewer';
-// import { DOCXPreview } from '@haikal/react-docx-viewer'; // Nanti
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+async function convertDocxToPdf(file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  const resp = await fetch(`${process.env.NEXT_PUBLIC_CONVERTER_URL}/convert`, {
+    method: 'POST',
+    body: form,
+  });
+  if (!resp.ok) throw new Error('Convert failed');
+  const blob = await resp.blob();
+  return URL.createObjectURL(blob);
+}
+
+function DocxPreviewViaPdf({ file }: { file: File }) {
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    let objectUrl: string | null = null;
+
+    convertDocxToPdf(file)
+      .then((url) => {
+        if (!active) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+        objectUrl = url;
+        setPdfUrl(url);
+      })
+      .catch((err) => {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : 'Convert failed');
+      });
+
+    return () => {
+      active = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [file]);
+
+  if (error) return <div className="text-red-500">{error}</div>;
+  if (!pdfUrl) return <div>Converting DOCX…</div>;
+  return <PDFPreview file={pdfUrl} />;
+}
 
 export default function MultiFormatViewer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Detect file type
-  const getFileExtension = (file: File) => {
-    return file.name.split('.').pop()?.toLowerCase();
-  };
+  const getFileExtension = (file: File) =>
+    file.name.split('.').pop()?.toLowerCase();
 
   const renderPreview = () => {
     if (!selectedFile) return <EmptyState />;
@@ -131,11 +175,7 @@ export default function MultiFormatViewer() {
       case 'pdf':
         return <PDFPreview file={selectedFile} />;
       case 'docx':
-        // return <DOCXPreview file={selectedFile} />;
-        return <div>DOCX Preview (Coming soon)</div>;
-      case 'xlsx':
-        // return <ExcelPreview file={selectedFile} />;
-        return <div>Excel Preview (Coming soon)</div>;
+        return <DocxPreviewViaPdf file={selectedFile} />;
       default:
         return <div>Format tidak didukung</div>;
     }
@@ -145,12 +185,10 @@ export default function MultiFormatViewer() {
     <div className="flex h-screen">
       <FileUpload
         onFileSelect={setSelectedFile}
-        accept=".pdf,.docx,.xlsx"
-        maxSizeMB={20}
+        accept=".pdf,.docx"
+        maxSizeMB={25}
       />
-      <div className="flex-1">
-        {renderPreview()}
-      </div>
+      <div className="flex-1">{renderPreview()}</div>
     </div>
   );
 }
@@ -393,4 +431,3 @@ import { ExcelPreview } from '@haikal/react-excel-viewer';
 **Composition Pattern = Better Architecture!** 🏗️✨
 
 _Made with ❤️ by Haikal - BINUS University_
-

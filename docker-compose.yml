@@ -1,0 +1,8 @@
+services:
+  converter:
+    build: ./converter-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

@@ -7,7 +7,7 @@
     "postinstall": "node scripts/copy-pdf-worker.js",
     "predev": "node scripts/sync-css.js",
     "dev": "next dev",
-    "build": "npm run copy-worker && npm run sync-css && next build",
+    "build": "pnpm run copy-worker && pnpm run sync-css && next build",
     "start": "next start",
     "lint": "next lint",
     "copy-worker": "node scripts/copy-pdf-worker.js",

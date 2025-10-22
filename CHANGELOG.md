@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### ✨ Added
+
+- `converter-service/` Express + TypeScript backend for DOCX → PDF conversion via LibreOffice headless
+  - Includes Dockerfile (LibreOffice + fonts) and `.dockerignore`
+  - Added `docker-compose.yml` for quick local spin-up
+
+### 🔄 Changed
+
+- Migrated repository tooling to pnpm (workspace + scripts)
+- Replaced direct DOCX rendering with backend conversion flow
+  - Removed `DocxPreview` component and DOCX utilities from the library bundle
+  - Updated Next.js examples to upload/convert DOCX before previewing with `PDFPreview`
+
+### 🧹 Removed
+
+- Legacy DOCX documentation (CSS setup, troubleshooting, refactor notes) tied to the deprecated renderer
+- Unused dependencies (`docx-preview`, `html2canvas`, `jspdf`, `jszip`) from the package
+
 ## [2.0.0] - 2025-01-21
 
 ### 🚀 Major Refactor: DocxPreview Component
