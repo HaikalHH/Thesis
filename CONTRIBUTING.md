@@ -16,17 +16,17 @@ This library is part of a thesis project focused on developing a React-based lib
 
 2. **Install dependencies**
    ```bash
-   npm install
+   pnpm install
    ```
 
-3. **Run development server**
+3. **Run development server (examples)**
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 4. **Build the library**
    ```bash
-   npm run build:lib
+   pnpm build
    ```
 
 ## 📁 Project Structure
@@ -132,7 +132,7 @@ We welcome feature requests! Please:
    - Add/update tests if needed
 
 3. **Test thoroughly**
-   - Run `npm run dev` and test manually
+   - Run `pnpm dev` and test manually
    - Check for TypeScript errors
    - Verify examples still work
 
@@ -165,13 +165,12 @@ We welcome feature requests! Please:
 
 ## 🎓 Project Phases
 
-This is phase 1 (PDF Preview) of the thesis project. Future phases:
+This is phase 1 (PDF Preview) of the thesis project. Roadmap terbaru:
 
-- [ ] Phase 2: DOCX Preview
+- [x] Phase 2: Office conversion (Word/Excel/PPT via converter-service)
 - [ ] Phase 3: TXT Preview
 - [ ] Phase 4: Image Preview
-- [ ] Phase 5: Excel Preview
-- [ ] Phase 6: PowerPoint Preview
+- [ ] Phase 5: Annotation & markup tooling
 
 Contributions related to future phases are welcome!
 
@@ -189,4 +188,3 @@ By contributing, you agree that your contributions will be licensed under the MI
 ---
 
 Thank you for contributing to make this library better! 🙏
-

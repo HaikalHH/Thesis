@@ -304,13 +304,12 @@ Open an issue on [GitHub](https://github.com/haikal/react-pdf-viewer/issues) wit
 
 ### Is there a roadmap?
 
-This is Phase 1 (PDF) of a thesis project. Future phases:
+This adalah fase pertama (PDF) dari proyek tugas akhir. Roadmap terbaru:
 
-- [ ] Phase 2: DOCX preview
+- [x] Phase 2: Office conversion (Word/Excel/PPT via converter-service)
 - [ ] Phase 3: TXT preview
 - [ ] Phase 4: Image preview
-- [ ] Phase 5: Excel preview
-- [ ] Phase 6: PowerPoint preview
+- [ ] Phase 5: Annotations & markup tools
 
 ---
 
@@ -398,4 +397,3 @@ Yes! The MIT License allows commercial use.
 ---
 
 **Happy coding! 🚀**
-

@@ -5,10 +5,12 @@ import Link from "next/link";
 import { FileUpload, PDFPreview } from "../../../dist/index.mjs";
 import {
   converterEndpoint,
-  convertDocxFileToPdf,
-} from "../../lib/convertDocxToPdf";
+  convertFileToPdf,
+  isConvertibleFile,
+  isPdfFile,
+} from "../../lib/convertToPdf";
 
-type FileType = "pdf" | "docx" | null;
+type FileCategory = "pdf" | "convertible" | null;
 
 export default function ExampleUploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -31,30 +33,10 @@ export default function ExampleUploadPage() {
     };
   }, [cleanupConvertedUrl]);
 
-  const fileType: FileType = useMemo(() => {
-    if (!selectedFile) {
-      return null;
-    }
-
-    if (selectedFile.type === "application/pdf") {
-      return "pdf";
-    }
-
-    if (
-      selectedFile.type ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ) {
-      return "docx";
-    }
-
-    const ext = selectedFile.name.split(".").pop()?.toLowerCase();
-    if (ext === "pdf") {
-      return "pdf";
-    }
-    if (ext === "docx") {
-      return "docx";
-    }
-
+  const fileType: FileCategory = useMemo(() => {
+    if (!selectedFile) return null;
+    if (isPdfFile(selectedFile)) return "pdf";
+    if (isConvertibleFile(selectedFile)) return "convertible";
     return null;
   }, [selectedFile]);
 
@@ -76,11 +58,13 @@ export default function ExampleUploadPage() {
       return;
     }
 
-    if (fileType !== "docx") {
+    if (fileType !== "convertible") {
       cleanupConvertedUrl();
       setPreviewSource(null);
       setStatus("idle");
-      setError("Format tidak didukung. Gunakan PDF atau DOCX.");
+      setError(
+        "Format tidak didukung. Gunakan PDF, Word, Excel, atau PowerPoint."
+      );
       return;
     }
 
@@ -91,7 +75,7 @@ export default function ExampleUploadPage() {
     setStatus("converting");
     setPreviewSource(null);
 
-    convertDocxFileToPdf(selectedFile, controller.signal)
+    convertFileToPdf(selectedFile, controller.signal)
       .then((url) => {
         if (cancelled) {
           URL.revokeObjectURL(url);
@@ -108,7 +92,7 @@ export default function ExampleUploadPage() {
         cleanupConvertedUrl();
         setStatus("idle");
         setError(
-          err instanceof Error ? err.message : "Gagal mengonversi file DOCX."
+          err instanceof Error ? err.message : "Gagal mengonversi dokumen."
         );
       });
 
@@ -147,8 +131,8 @@ export default function ExampleUploadPage() {
                 Document Upload & Preview
               </h1>
               <p className="text-xs text-gray-600">
-                Upload PDF atau DOCX, konversi otomatis ke PDF dan tampilkan di
-                viewer
+                Upload PDF atau dokumen Office (Word/Excel/PPT), konversi otomatis
+                ke PDF dan tampilkan di viewer
               </p>
             </div>
           </div>
@@ -163,7 +147,7 @@ export default function ExampleUploadPage() {
         <div className="w-96 border-r border-gray-200 bg-white flex flex-col">
           <FileUpload
             onFileSelect={setSelectedFile}
-            accept=".pdf,.docx"
+            accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
             maxSizeMB={25}
             showFileList={true}
           />
@@ -182,7 +166,7 @@ export default function ExampleUploadPage() {
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4" />
                 <p className="text-gray-600 font-medium">
-                  Mengonversi DOCX ke PDF...
+                  Mengonversi dokumen ke PDF...
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
                   Proses ini dapat memakan waktu hingga 1 menit untuk file besar.
@@ -233,7 +217,7 @@ export default function ExampleUploadPage() {
                   Tidak ada file yang dipilih
                 </p>
                 <p className="text-gray-400 text-sm">
-                  Upload file PDF atau DOCX untuk melihat preview
+                  Upload file PDF, Word, Excel, atau PowerPoint untuk melihat preview
                 </p>
               </div>
             </div>
@@ -257,11 +241,11 @@ export default function ExampleUploadPage() {
       <div className="bg-white border-t border-gray-200 px-6 py-3">
         <details className="cursor-pointer">
           <summary className="font-semibold text-sm text-gray-700 hover:text-gray-900">
-            💻 Lihat Kode Implementasi (Convert DOCX → PDF)
+            💻 Lihat Kode Implementasi (Convert Word/Excel/PPT → PDF)
           </summary>
           <div className="mt-3 bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
             <pre className="text-xs font-mono">
-{`async function convertDocxToPdf(file: File) {
+{`async function convertDocumentToPdf(file: File) {
   const form = new FormData();
   form.append("file", file);
   const resp = await fetch(process.env.NEXT_PUBLIC_CONVERTER_URL + "/convert", {
@@ -277,9 +261,9 @@ export default function ExampleUploadPage() {
 const fileType = getFileType(file);
 if (fileType === "pdf") {
   setPreviewSource(file);
-} else if (fileType === "docx") {
+} else if (fileType === "convertible") {
   setStatus("converting");
-  const url = await convertDocxToPdf(file);
+  const url = await convertDocumentToPdf(file);
   setPreviewSource(url); // kirim ke <PDFPreview file={url} />
 }`}
             </pre>
@@ -287,9 +271,10 @@ if (fileType === "pdf") {
 
           <div className="mt-3 bg-green-50 border border-green-200 p-3 rounded-lg">
             <p className="text-sm text-green-900">
-              <strong>💡 Flow baru:</strong> Semua DOCX dikonversi ke PDF
-              server-side melalui converter-service sebelum dipreview. Viewer di
-              frontend sekarang cukup menggunakan komponen PDFPreview.
+              <strong>💡 Flow baru:</strong> Semua dokumen Office (Word, Excel,
+              PowerPoint) dikonversi ke PDF melalui converter-service sebelum
+              dipreview. Viewer di frontend sekarang cukup menggunakan komponen
+              PDFPreview.
             </p>
           </div>
         </details>

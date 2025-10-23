@@ -16,7 +16,7 @@ Library React TypeScript untuk preview file PDF di framework Next.js menggunakan
 - ✅ **Full Features** - Zoom, navigation, fullscreen, download
 - ✅ **TypeScript** - Full type definitions
 - ✅ **Beautiful UI** - Modern & responsive design
-- ✅ **DOCX Support** - Konversi DOCX → PDF via converter-service berbasis LibreOffice
+- ✅ **Office Support** - Konversi Word/Excel/PowerPoint → PDF via converter-service berbasis LibreOffice
 
 ## 📦 Instalasi
 
@@ -61,9 +61,9 @@ export default function Page() {
 }
 ```
 
-## 📝 DOCX Conversion Flow
+## 📝 Office Conversion Flow
 
-Docx tidak lagi dirender langsung di browser. Gunakan service `converter-service` (Express + LibreOffice headless) untuk mengonversi file DOCX menjadi PDF, lalu tampilkan dengan `PDFPreview`.
+Dokumen Office (Word, Excel, PowerPoint) tidak lagi dirender langsung di browser. Gunakan service `converter-service` (Express + LibreOffice headless) untuk mengonversi file menjadi PDF, lalu tampilkan dengan `PDFPreview`.
 
 ### Menjalankan converter-service (lokal)
 
@@ -89,7 +89,7 @@ docker compose up --build
 ### Contoh upload di frontend (Next.js)
 
 ```ts
-async function convertDocxToPdf(file: File) {
+async function convertDocumentToPdf(file: File) {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -107,7 +107,7 @@ async function convertDocxToPdf(file: File) {
 }
 ```
 
-Gunakan URL blob hasil konversi tersebut pada komponen `PDFPreview`.
+Gunakan URL blob hasil konversi tersebut pada komponen `PDFPreview`. File Word/Excel/PPT otomatis dikonversi ke PDF sebelum ditampilkan.
 
 **That's ALL!** 🎉
 
@@ -354,11 +354,10 @@ Library ini merupakan bagian dari proyek skripsi:
 
 ### Tahap Pengembangan:
 - [x] **Tahap 1**: Preview PDF ✅
-- [ ] **Tahap 2**: Preview DOCX
+- [x] **Tahap 2**: Konversi Office (Word/Excel/PPT) via converter-service ✅
 - [ ] **Tahap 3**: Preview TXT
 - [ ] **Tahap 4**: Preview Images
-- [ ] **Tahap 5**: Preview Excel
-- [ ] **Tahap 6**: Preview PowerPoint
+- [ ] **Tahap 5**: Anotasi & Markup
 
 ## 📄 License
 

@@ -11,7 +11,7 @@ export default function Home() {
             React Document Viewer
           </h1>
           <p className="text-xl text-gray-600 mb-2">
-            Library React TypeScript untuk Preview PDF di Next.js (DOCX via converter-service)
+            Library React TypeScript untuk Preview PDF di Next.js (Office via converter-service)
           </p>
           <p className="text-sm text-gray-500">
             Powered by PDF.js • Compatible dengan Next.js 14/15 App Router • Full TypeScript
@@ -32,14 +32,14 @@ export default function Home() {
                 Preview Mode
               </h2>
               <p className="text-gray-600 mb-4">
-                Preview PDF dari URL atau otomatis konversi DOCX → PDF sebelum ditampilkan. Cocok untuk integrasi cepat.
+                Preview PDF dari URL atau otomatis konversi Word/Excel/PPT → PDF sebelum ditampilkan. Cocok untuk integrasi cepat.
               </p>
               <div className="bg-gray-900 text-gray-100 p-3 rounded-lg text-xs font-mono">
                 {'<PDFPreview file={source} />'}
               </div>
               <div className="mt-3 flex gap-2">
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">📄 PDF</span>
-                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">📝 DOCX → PDF</span>
+                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">📝 Office → PDF</span>
               </div>
             </div>
           </Link>
@@ -56,14 +56,14 @@ export default function Home() {
                 Upload Mode
               </h2>
               <p className="text-gray-600 mb-4">
-                UI lengkap dengan drag & drop upload, file list, dan auto-preview. DOCX otomatis dikonversi ke PDF oleh converter-service.
+                UI lengkap dengan drag & drop upload, file list, dan auto-preview. Word, Excel, dan PowerPoint otomatis dikonversi ke PDF oleh converter-service.
               </p>
               <div className="bg-gray-900 text-gray-100 p-3 rounded-lg text-xs font-mono">
                 {'<FileUpload /> + <AutoPreview />'}
               </div>
               <div className="mt-3 flex gap-2">
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">📄 PDF</span>
-                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">📝 DOCX → PDF</span>
+                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">📝 Office → PDF</span>
                 <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">✨ Auto</span>
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function Home() {
           <p>Proyek Skripsi: Pengembangan Library Berbasis React untuk Preview Multi-Format Dokumen</p>
           <p className="mt-2">Next.js 14/15 • React 18 • TypeScript • PDF.js • LibreOffice • Tailwind CSS</p>
           <p className="mt-3 text-xs">
-            Support: <span className="font-semibold">PDF</span> & <span className="font-semibold">DOCX (via converter)</span> •
+            Support: <span className="font-semibold">PDF</span> & <span className="font-semibold">Office (Word/Excel/PPT via converter)</span> •
             More formats coming soon!
           </p>
         </div>

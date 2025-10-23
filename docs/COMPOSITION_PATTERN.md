@@ -10,7 +10,7 @@ Library ini menggunakan **Composition Pattern** untuk memisahkan:
 ## 💡 Kenapa Composition Pattern?
 
 ### Keuntungan:
-- ✅ **Reusable** - `FileUpload` bisa dipakai untuk PDF, DOCX, Excel, dll
+- ✅ **Reusable** - `FileUpload` bisa dipakai untuk PDF, Word, Excel, PPT, dll
 - ✅ **Flexible** - User control layout & styling sendiri
 - ✅ **Modular** - Easy to extend & customize
 - ✅ **Maintainable** - Separation of concerns
@@ -113,7 +113,7 @@ export default function PDFViewerPage() {
 import { FileUpload, PDFPreview } from '@haikal/react-pdf-viewer';
 import { useEffect, useState } from 'react';
 
-async function convertDocxToPdf(file: File) {
+async function convertOfficeToPdf(file: File) {
   const form = new FormData();
   form.append('file', file);
   const resp = await fetch(`${process.env.NEXT_PUBLIC_CONVERTER_URL}/convert`, {
@@ -125,7 +125,7 @@ async function convertDocxToPdf(file: File) {
   return URL.createObjectURL(blob);
 }
 
-function DocxPreviewViaPdf({ file }: { file: File }) {
+function OfficePreviewViaPdf({ file }: { file: File }) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -133,7 +133,7 @@ function DocxPreviewViaPdf({ file }: { file: File }) {
     let active = true;
     let objectUrl: string | null = null;
 
-    convertDocxToPdf(file)
+    convertOfficeToPdf(file)
       .then((url) => {
         if (!active) {
           URL.revokeObjectURL(url);
@@ -156,7 +156,7 @@ function DocxPreviewViaPdf({ file }: { file: File }) {
   }, [file]);
 
   if (error) return <div className="text-red-500">{error}</div>;
-  if (!pdfUrl) return <div>Converting DOCX…</div>;
+  if (!pdfUrl) return <div>Converting document…</div>;
   return <PDFPreview file={pdfUrl} />;
 }
 
@@ -174,8 +174,13 @@ export default function MultiFormatViewer() {
     switch (ext) {
       case 'pdf':
         return <PDFPreview file={selectedFile} />;
+      case 'doc':
       case 'docx':
-        return <DocxPreviewViaPdf file={selectedFile} />;
+      case 'ppt':
+      case 'pptx':
+      case 'xls':
+      case 'xlsx':
+        return <OfficePreviewViaPdf file={selectedFile} />;
       default:
         return <div>Format tidak didukung</div>;
     }
@@ -185,7 +190,7 @@ export default function MultiFormatViewer() {
     <div className="flex h-screen">
       <FileUpload
         onFileSelect={setSelectedFile}
-        accept=".pdf,.docx"
+        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
         maxSizeMB={25}
       />
       <div className="flex-1">{renderPreview()}</div>
@@ -382,26 +387,56 @@ const [isLoading, setIsLoading] = useState(false);
 
 ---
 
-## 🚀 Future: Multi-Format Support
+## 🚀 Multi-Format Support (Today)
 
-Dengan composition pattern, sangat mudah untuk support format lain:
+Dukungan Word/Excel/PowerPoint sudah tersedia melalui `converter-service`. Kita cukup menjaga arsitektur komposisi dan mengarahkan file non-PDF ke helper konversi.
 
 ```tsx
-// PDF Preview Library (v1.0.0) ✅
 import { FileUpload, PDFPreview } from '@haikal/react-pdf-viewer';
+import { convertFileToPdf, isConvertibleFile, isPdfFile } from '../lib/convertToPdf';
 
-// DOCX Preview Library (v2.0.0) - Coming soon
-import { DOCXPreview } from '@haikal/react-docx-viewer';
+function UnifiedViewer() {
+  const [source, setSource] = useState<File | string | null>(null);
+  const [status, setStatus] = useState<'idle' | 'converting'>('idle');
+  const [error, setError] = useState<string | null>(null);
 
-// Excel Preview Library (v3.0.0) - Coming soon
-import { ExcelPreview } from '@haikal/react-excel-viewer';
+  const handleFile = async (file: File | null) => {
+    setError(null);
+    if (!file) return setSource(null);
+    if (isPdfFile(file)) return setSource(file);
+    if (!isConvertibleFile(file)) {
+      setError('Gunakan PDF, Word, Excel, atau PowerPoint.');
+      return;
+    }
+    setStatus('converting');
+    try {
+      const url = await convertFileToPdf(file);
+      setSource(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Konversi gagal.');
+    } finally {
+      setStatus('idle');
+    }
+  };
 
-// Unified Usage:
-<FileUpload onFileSelect={setFile} accept=".pdf,.docx,.xlsx" />
-{renderPreview(file)}  // Auto-detect format
+  return (
+    <div className="flex h-screen">
+      <FileUpload
+        onFileSelect={handleFile}
+        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+        maxSizeMB={25}
+      />
+      <div className="flex-1">
+        {status === 'converting' && <p>Konversi berlangsung…</p>}
+        {error && <p>{error}</p>}
+        {source && !error && status === 'idle' && <PDFPreview file={source} />}
+      </div>
+    </div>
+  );
+}
 ```
 
-**Modular & Scalable!** 🎉
+**Hasilnya:** Satu viewer, banyak format — tanpa perlu komponen terpisah untuk setiap jenis dokumen. 🎉
 
 ---
 

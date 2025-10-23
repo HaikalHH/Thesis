@@ -4,22 +4,34 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PDFPreview } from "../../../dist/index.mjs";
 import {
-  convertDocxUrlToPdf,
+  convertRemoteFileToPdf,
   converterEndpoint,
-} from "../../lib/convertDocxToPdf";
+} from "../../lib/convertToPdf";
 
-type PreviewMode = "pdf" | "docx";
+type PreviewMode = "pdf" | "word" | "presentation" | "spreadsheet";
 
 const PDF_SAMPLE = "/sample.pdf";
-const DOCX_SAMPLE =
+const WORD_SAMPLE =
   "https://file-examples.com/wp-content/storage/2017/02/file-sample_100kB.docx";
+const PPT_SAMPLE =
+  "https://filesamples.com/samples/document/pptx/sample2.pptx";
+const SHEET_SAMPLE =
+  "https://filesamples.com/samples/document/xlsx/sample3.xlsx";
+
+const INITIAL_URLS: Record<PreviewMode, string> = {
+  pdf: PDF_SAMPLE,
+  word: WORD_SAMPLE,
+  presentation: PPT_SAMPLE,
+  spreadsheet: SHEET_SAMPLE,
+};
 
 export default function ExampleSimplePage() {
   const [mode, setMode] = useState<PreviewMode>("pdf");
-  const [pdfUrl, setPdfUrl] = useState<string>(PDF_SAMPLE);
-  const [docxUrl, setDocxUrl] = useState<string>(DOCX_SAMPLE);
-  const [inputValue, setInputValue] = useState<string>(PDF_SAMPLE);
-  const [previewSource, setPreviewSource] = useState<File | string>(PDF_SAMPLE);
+  const [urls, setUrls] = useState<Record<PreviewMode, string>>(INITIAL_URLS);
+  const [inputValue, setInputValue] = useState<string>(INITIAL_URLS.pdf);
+  const [previewSource, setPreviewSource] = useState<File | string>(
+    INITIAL_URLS.pdf
+  );
   const [status, setStatus] = useState<"idle" | "loading">("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -39,15 +51,15 @@ export default function ExampleSimplePage() {
   }, [cleanupConvertedUrl]);
 
   useEffect(() => {
-    setInputValue(mode === "pdf" ? pdfUrl : docxUrl);
-  }, [docxUrl, mode, pdfUrl]);
+    setInputValue(urls[mode]);
+  }, [mode, urls]);
 
   useEffect(() => {
     setError(null);
 
     if (mode === "pdf") {
       cleanupConvertedUrl();
-      setPreviewSource(pdfUrl);
+      setPreviewSource(urls.pdf);
       setStatus("idle");
       return;
     }
@@ -56,7 +68,7 @@ export default function ExampleSimplePage() {
     setStatus("loading");
     cleanupConvertedUrl();
 
-    convertDocxUrlToPdf(docxUrl, controller.signal)
+    convertRemoteFileToPdf(urls[mode], controller.signal)
       .then((url) => {
         convertedUrlRef.current = url;
         setPreviewSource(url);
@@ -74,15 +86,28 @@ export default function ExampleSimplePage() {
     return () => {
       controller.abort();
     };
-  }, [cleanupConvertedUrl, docxUrl, mode, pdfUrl]);
+  }, [cleanupConvertedUrl, mode, urls]);
 
   const handleLoad = () => {
-    if (mode === "pdf") {
-      setPdfUrl(inputValue.trim());
-      return;
-    }
-    setDocxUrl(inputValue.trim());
+    const trimmed = inputValue.trim();
+    setUrls((prev) => ({
+      ...prev,
+      [mode]: trimmed,
+    }));
   };
+
+  const setUrlForMode = useCallback(
+    (targetMode: PreviewMode, value: string) => {
+      setUrls((prev) => ({
+        ...prev,
+        [targetMode]: value,
+      }));
+      if (mode === targetMode) {
+        setInputValue(value);
+      }
+    },
+    [mode]
+  );
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -110,7 +135,7 @@ export default function ExampleSimplePage() {
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">Document Preview</h1>
             <p className="text-sm text-gray-600">
-              Preview PDF langsung atau konversi DOCX → PDF dengan backend
+              Preview PDF langsung atau konversi Word/Excel/PPT → PDF dengan backend
             </p>
           </div>
 
@@ -122,7 +147,7 @@ export default function ExampleSimplePage() {
         </div>
 
         <div className="mt-4 space-y-3">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setMode("pdf")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -134,14 +159,34 @@ export default function ExampleSimplePage() {
               📄 PDF
             </button>
             <button
-              onClick={() => setMode("docx")}
+              onClick={() => setMode("word")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                mode === "docx"
+                mode === "word"
                   ? "bg-purple-600 text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              📝 DOCX → PDF
+              📝 Word → PDF
+            </button>
+            <button
+              onClick={() => setMode("presentation")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                mode === "presentation"
+                  ? "bg-orange-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              🎞️ PowerPoint → PDF
+            </button>
+            <button
+              onClick={() => setMode("spreadsheet")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                mode === "spreadsheet"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              📊 Excel → PDF
             </button>
           </div>
 
@@ -164,14 +209,15 @@ export default function ExampleSimplePage() {
           {mode === "pdf" ? (
             <div className="flex gap-2 flex-wrap">
               <button
-                onClick={() => setPdfUrl(PDF_SAMPLE)}
+                onClick={() => setUrlForMode("pdf", PDF_SAMPLE)}
                 className="px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded"
               >
                 📄 Local PDF Sample
               </button>
               <button
                 onClick={() =>
-                  setPdfUrl(
+                  setUrlForMode(
+                    "pdf",
                     "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
                   )
                 }
@@ -183,10 +229,34 @@ export default function ExampleSimplePage() {
           ) : (
             <div className="flex gap-2 flex-wrap">
               <button
-                onClick={() => setDocxUrl(DOCX_SAMPLE)}
-                className="px-3 py-1 text-xs bg-purple-200 hover:bg-purple-300 rounded"
+                onClick={() => setUrlForMode("word", WORD_SAMPLE)}
+                className={`px-3 py-1 text-xs rounded ${
+                  mode === "word"
+                    ? "bg-purple-200 hover:bg-purple-300"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
               >
-                📝 Sample DOCX (100KB)
+                📝 Word Sample
+              </button>
+              <button
+                onClick={() => setUrlForMode("presentation", PPT_SAMPLE)}
+                className={`px-3 py-1 text-xs rounded ${
+                  mode === "presentation"
+                    ? "bg-orange-200 hover:bg-orange-300"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                🎞️ PPT Sample
+              </button>
+              <button
+                onClick={() => setUrlForMode("spreadsheet", SHEET_SAMPLE)}
+                className={`px-3 py-1 text-xs rounded ${
+                  mode === "spreadsheet"
+                    ? "bg-green-200 hover:bg-green-300"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                📊 Excel Sample
               </button>
             </div>
           )}
@@ -196,11 +266,11 @@ export default function ExampleSimplePage() {
               <span className="text-blue-600 text-lg">ℹ️</span>
               <div className="flex-1">
                 <p className="font-semibold text-blue-900 mb-1">
-                  Mode DOCX membutuhkan converter-service
+                  Mode konversi membutuhkan converter-service
                 </p>
                 <p className="text-blue-700">
-                  Aplikasi akan mengambil file DOCX dari URL, mengirim ke{" "}
-                  <code>{converterEndpoint}</code> untuk konversi PDF, lalu
+                  Aplikasi akan mengambil file sumber (Word/Excel/PPT), mengirim
+                  ke <code>{converterEndpoint}</code> untuk konversi PDF, lalu
                   menampilkan hasilnya dengan PDFPreview.
                 </p>
               </div>
@@ -215,7 +285,7 @@ export default function ExampleSimplePage() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-200 border-t-purple-600 mx-auto mb-4" />
               <p className="text-gray-600 font-medium">
-                Mengonversi DOCX ke PDF...
+                Mengonversi dokumen ke PDF...
               </p>
             </div>
           </div>
@@ -265,8 +335,8 @@ export default function ExampleSimplePage() {
           <div className="mt-4 bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
             <pre className="text-sm font-mono">
 {`const source = mode === "pdf"
-  ? pdfUrl
-  : await convertDocxUrlToPdf(docxUrl);
+  ? urls.pdf
+  : await convertRemoteFileToPdf(urls[mode]);
 
 return <PDFPreview file={source} />;`}
             </pre>
@@ -274,9 +344,10 @@ return <PDFPreview file={source} />;`}
 
           <div className="mt-3 bg-green-50 border border-green-200 p-3 rounded-lg">
             <p className="text-sm text-green-900">
-              <strong>✨ Satu viewer untuk semuanya:</strong> DOCX tidak lagi
-              dirender di browser. File dikonversi dahulu menjadi PDF di backend,
-              kemudian di-preview menggunakan komponen PDFPreview.
+              <strong>✨ Satu viewer untuk semuanya:</strong> Dokumen Office tidak lagi
+              dirender di browser. Word, Excel, dan PowerPoint dikonversi dulu
+              menjadi PDF di backend, kemudian di-preview menggunakan komponen
+              PDFPreview.
             </p>
           </div>
         </details>

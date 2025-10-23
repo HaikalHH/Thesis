@@ -6,16 +6,17 @@ All notable changes to this project will be documented in this file.
 
 ### ✨ Added
 
-- `converter-service/` Express + TypeScript backend for DOCX → PDF conversion via LibreOffice headless
+- `converter-service/` Express + TypeScript backend for Office documents → PDF conversion via LibreOffice headless
   - Includes Dockerfile (LibreOffice + fonts) and `.dockerignore`
   - Added `docker-compose.yml` for quick local spin-up
+- LibreOffice conversion pipeline now supports Word, Excel, and PowerPoint (`.doc/.docx`, `.xls/.xlsx`, `.ppt/.pptx`) and surfaces them through the Next.js examples
 
 ### 🔄 Changed
 
 - Migrated repository tooling to pnpm (workspace + scripts)
-- Replaced direct DOCX rendering with backend conversion flow
+- Replaced direct Office document rendering with backend conversion flow
   - Removed `DocxPreview` component and DOCX utilities from the library bundle
-  - Updated Next.js examples to upload/convert DOCX before previewing with `PDFPreview`
+  - Updated Next.js examples to upload/convert Office documents (Word/Excel/PPT) before previewing with `PDFPreview`
 
 ### 🧹 Removed
 

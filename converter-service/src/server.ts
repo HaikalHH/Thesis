@@ -28,6 +28,21 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
+const ALLOWED_EXTENSIONS = new Set([
+  ".doc",
+  ".docx",
+  ".odt",
+  ".rtf",
+  ".ppt",
+  ".pptx",
+  ".odp",
+  ".xls",
+  ".xlsx",
+  ".ods",
+  ".txt",
+  ".pdf",
+]);
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024 },
@@ -92,6 +107,28 @@ function remember(hash: string, buffer: Buffer) {
   });
 }
 
+async function resolvePdfPath(
+  directory: string,
+  originalname: string
+): Promise<string> {
+  const expected = path.join(directory, `${path.parse(originalname).name}.pdf`);
+  try {
+    await fs.access(expected);
+    return expected;
+  } catch {
+    // ignore and attempt to discover any PDF in folder
+  }
+
+  const entries = await fs.readdir(directory);
+  const pdfFile = entries.find((entry) => entry.toLowerCase().endsWith(".pdf"));
+
+  if (!pdfFile) {
+    throw new Error("Converted PDF not found");
+  }
+
+  return path.join(directory, pdfFile);
+}
+
 app.post("/convert", upload.single("file"), async (req, res) => {
   if (!req.file) {
     res.status(400).send("No file provided");
@@ -99,6 +136,15 @@ app.post("/convert", upload.single("file"), async (req, res) => {
   }
 
   const { buffer, originalname } = req.file;
+  const extension = path.extname(originalname || "").toLowerCase();
+
+  if (!ALLOWED_EXTENSIONS.has(extension)) {
+    res
+      .status(400)
+      .send("Unsupported file type. Please upload a document, spreadsheet, or presentation.");
+    return;
+  }
+
   const hash = crypto.createHash("sha256").update(buffer).digest("hex");
   const cached = conversionCache.get(hash);
 
@@ -122,7 +168,7 @@ app.post("/convert", upload.single("file"), async (req, res) => {
 
     await runSoffice(inputPath, tmpDir);
 
-    const pdfPath = path.join(tmpDir, `${path.parse(originalname).name}.pdf`);
+    const pdfPath = await resolvePdfPath(tmpDir, originalname);
     const pdfBuffer = await fs.readFile(pdfPath);
 
     remember(hash, pdfBuffer);
