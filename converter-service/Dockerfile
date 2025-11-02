@@ -2,12 +2,24 @@ FROM node:20-bullseye
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
-    libreoffice \
-    fonts-noto \
-    fonts-noto-cjk \
-    fonts-dejavu \
-  && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    echo "deb http://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list.d/fonts.list; \
+    echo "deb http://deb.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list.d/fonts.list; \
+    echo "deb http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list.d/fonts.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends debconf-utils; \
+    echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections; \
+    apt-get install -y --no-install-recommends \
+      libreoffice \
+      libreoffice-java-common \
+      fonts-noto \
+      fonts-noto-cjk \
+      fonts-dejavu \
+      fonts-liberation \
+      ttf-mscorefonts-installer \
+      default-jre-headless; \
+    apt-get purge -y --auto-remove debconf-utils; \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

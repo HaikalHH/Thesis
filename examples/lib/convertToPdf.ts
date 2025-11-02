@@ -4,6 +4,14 @@ const DEFAULT_CONVERTER_URL = (process.env.NEXT_PUBLIC_CONVERTER_URL ??
 export const converterBaseUrl = DEFAULT_CONVERTER_URL.replace(/\/$/, "");
 
 export const converterEndpoint = `${converterBaseUrl}/convert`;
+export const excelConverterEndpoint = `${converterBaseUrl}/convert-excel`;
+
+const EXCEL_MIME_TYPES = new Set([
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+]);
+
+const EXCEL_EXTENSIONS = new Set(["xls", "xlsx"]);
 
 const CONVERTIBLE_MIME_TYPES = new Set([
   "application/msword",
@@ -31,6 +39,15 @@ const CONVERTIBLE_EXTENSIONS = new Set([
   "ods",
   "txt",
 ]);
+
+export function isExcelFile(file: File): boolean {
+  if (!file) return false;
+  if (file.type && EXCEL_MIME_TYPES.has(file.type)) {
+    return true;
+  }
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  return !!ext && EXCEL_EXTENSIONS.has(ext);
+}
 
 export function isConvertibleFile(file: File): boolean {
   if (!file) return false;
@@ -67,6 +84,39 @@ export async function convertFileToPdf(
 
   const blob = await response.blob();
   return URL.createObjectURL(blob);
+}
+
+export async function convertExcelToHtml(
+  file: File,
+  signal?: AbortSignal
+): Promise<Record<string, string>> {
+  const form = new FormData();
+  form.append("file", file);
+
+  const response = await fetch(excelConverterEndpoint, {
+    method: "POST",
+    body: form,
+    signal,
+  });
+
+  if (!response.ok) {
+    const fallback = await response.text().catch(() => "");
+    throw new Error(
+      fallback || `Excel convert failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const payload = await response.json();
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    !payload.sheets ||
+    typeof payload.sheets !== "object"
+  ) {
+    throw new Error("Invalid response from Excel converter");
+  }
+
+  return payload.sheets as Record<string, string>;
 }
 
 function inferFilename(url: string, fallbackExt: string): string {

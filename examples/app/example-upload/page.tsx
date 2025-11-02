@@ -3,19 +3,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { FileUpload, PDFPreview } from "../../../dist/index.mjs";
+import ExcelTabsPreview from "@/components/ExcelTabsPreview";
 import {
   converterEndpoint,
+  convertExcelToHtml,
   convertFileToPdf,
+  excelConverterEndpoint,
   isConvertibleFile,
+  isExcelFile,
   isPdfFile,
 } from "../../lib/convertToPdf";
 
-type FileCategory = "pdf" | "convertible" | null;
+type FileCategory = "pdf" | "excel" | "convertible" | null;
 
 export default function ExampleUploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewSource, setPreviewSource] = useState<File | string | null>(null);
+  const [excelSheets, setExcelSheets] = useState<Record<string, string> | null>(
+    null
+  );
   const [status, setStatus] = useState<"idle" | "converting">("idle");
+  const [statusLabel, setStatusLabel] = useState("Memproses dokumen...");
   const [error, setError] = useState<string | null>(null);
 
   const convertedUrlRef = useRef<string | null>(null);
@@ -25,6 +33,7 @@ export default function ExampleUploadPage() {
       URL.revokeObjectURL(convertedUrlRef.current);
       convertedUrlRef.current = null;
     }
+    setExcelSheets(null);
   }, []);
 
   useEffect(() => {
@@ -36,6 +45,7 @@ export default function ExampleUploadPage() {
   const fileType: FileCategory = useMemo(() => {
     if (!selectedFile) return null;
     if (isPdfFile(selectedFile)) return "pdf";
+    if (isExcelFile(selectedFile)) return "excel";
     if (isConvertibleFile(selectedFile)) return "convertible";
     return null;
   }, [selectedFile]);
@@ -44,7 +54,9 @@ export default function ExampleUploadPage() {
     if (!selectedFile) {
       cleanupConvertedUrl();
       setPreviewSource(null);
+      setExcelSheets(null);
       setStatus("idle");
+      setStatusLabel("Memproses dokumen...");
       setError(null);
       return;
     }
@@ -53,15 +65,57 @@ export default function ExampleUploadPage() {
 
     if (fileType === "pdf") {
       cleanupConvertedUrl();
+      setExcelSheets(null);
       setPreviewSource(selectedFile);
       setStatus("idle");
+      setStatusLabel("Memproses dokumen...");
       return;
+    }
+
+    if (fileType === "excel") {
+      const controller = new AbortController();
+      let cancelled = false;
+
+      cleanupConvertedUrl();
+      setStatus("converting");
+      setStatusLabel("Menyusun preview Excel multi-sheet...");
+      setPreviewSource(null);
+
+      convertExcelToHtml(selectedFile, controller.signal)
+        .then((sheets) => {
+          if (cancelled) {
+            return;
+          }
+          setExcelSheets(sheets);
+          setStatus("idle");
+          setStatusLabel("Memproses dokumen...");
+        })
+        .catch((err) => {
+          if (controller.signal.aborted) {
+            return;
+          }
+          cleanupConvertedUrl();
+          setStatus("idle");
+          setStatusLabel("Memproses dokumen...");
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Gagal menyiapkan preview Excel."
+          );
+        });
+
+      return () => {
+        cancelled = true;
+        controller.abort();
+      };
     }
 
     if (fileType !== "convertible") {
       cleanupConvertedUrl();
       setPreviewSource(null);
+      setExcelSheets(null);
       setStatus("idle");
+      setStatusLabel("Memproses dokumen...");
       setError(
         "Format tidak didukung. Gunakan PDF, Word, Excel, atau PowerPoint."
       );
@@ -73,6 +127,7 @@ export default function ExampleUploadPage() {
 
     cleanupConvertedUrl();
     setStatus("converting");
+    setStatusLabel("Mengonversi dokumen ke PDF...");
     setPreviewSource(null);
 
     convertFileToPdf(selectedFile, controller.signal)
@@ -82,8 +137,10 @@ export default function ExampleUploadPage() {
           return;
         }
         convertedUrlRef.current = url;
+        setExcelSheets(null);
         setPreviewSource(url);
         setStatus("idle");
+        setStatusLabel("Memproses dokumen...");
       })
       .catch((err) => {
         if (controller.signal.aborted) {
@@ -91,6 +148,7 @@ export default function ExampleUploadPage() {
         }
         cleanupConvertedUrl();
         setStatus("idle");
+        setStatusLabel("Memproses dokumen...");
         setError(
           err instanceof Error ? err.message : "Gagal mengonversi dokumen."
         );
@@ -152,7 +210,8 @@ export default function ExampleUploadPage() {
             showFileList={true}
           />
           <div className="px-4 py-3 border-t border-gray-200 text-xs text-gray-500">
-            <p>{`Service converter: ${converterEndpoint}`}</p>
+            <p>{`Endpoint PDF: ${converterEndpoint}`}</p>
+            <p className="mt-1">{`Endpoint Excel: ${excelConverterEndpoint}`}</p>
             <p className="mt-1">
               Pastikan service berjalan (`pnpm dev` di converter-service atau
               Docker container).
@@ -166,7 +225,7 @@ export default function ExampleUploadPage() {
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4" />
                 <p className="text-gray-600 font-medium">
-                  Mengonversi dokumen ke PDF...
+                  {statusLabel}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
                   Proses ini dapat memakan waktu hingga 1 menit untuk file besar.
@@ -223,6 +282,10 @@ export default function ExampleUploadPage() {
             </div>
           )}
 
+          {excelSheets && !error && status === "idle" && (
+            <ExcelTabsPreview sheets={excelSheets} />
+          )}
+
           {previewSource && !error && status === "idle" && (
             <PDFPreview
               file={previewSource}
@@ -241,7 +304,7 @@ export default function ExampleUploadPage() {
       <div className="bg-white border-t border-gray-200 px-6 py-3">
         <details className="cursor-pointer">
           <summary className="font-semibold text-sm text-gray-700 hover:text-gray-900">
-            💻 Lihat Kode Implementasi (Convert Word/Excel/PPT → PDF)
+            💻 Lihat Kode Implementasi (Word/PPT → PDF & Excel → HTML)
           </summary>
           <div className="mt-3 bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
             <pre className="text-xs font-mono">
@@ -257,10 +320,26 @@ export default function ExampleUploadPage() {
   return URL.createObjectURL(blob);
 }
 
+async function convertExcelToHtmlSheets(file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const resp = await fetch(
+    process.env.NEXT_PUBLIC_CONVERTER_URL + "/convert-excel",
+    { method: "POST", body: form }
+  );
+  if (!resp.ok) throw new Error("Excel convert failed");
+  const json = await resp.json();
+  return json.sheets as Record<string, string>;
+}
+
 // Di komponen:
 const fileType = getFileType(file);
 if (fileType === "pdf") {
   setPreviewSource(file);
+} else if (fileType === "excel") {
+  setStatus("converting");
+  const sheets = await convertExcelToHtmlSheets(file);
+  setExcelSheets(sheets); // kirim ke <ExcelTabsPreview sheets={sheets} />
 } else if (fileType === "convertible") {
   setStatus("converting");
   const url = await convertDocumentToPdf(file);
@@ -271,10 +350,11 @@ if (fileType === "pdf") {
 
           <div className="mt-3 bg-green-50 border border-green-200 p-3 rounded-lg">
             <p className="text-sm text-green-900">
-              <strong>💡 Flow baru:</strong> Semua dokumen Office (Word, Excel,
-              PowerPoint) dikonversi ke PDF melalui converter-service sebelum
-              dipreview. Viewer di frontend sekarang cukup menggunakan komponen
-              PDFPreview.
+              <strong>💡 Flow baru:</strong> Word & PowerPoint tetap diubah ke
+              PDF melalui <code className="font-mono">/convert</code>, sedangkan
+              Excel dirender ke HTML multi-sheet melalui{" "}
+              <code className="font-mono">/convert-excel</code> dan ditampilkan
+              dengan tab menggunakan <code className="font-mono">ExcelTabsPreview</code>.
             </p>
           </div>
         </details>
